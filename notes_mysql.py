@@ -10,9 +10,9 @@ def db_connection():
     con = None
     try:
         con = mysql.connector.connect(host='127.0.0.1',
-                                         user='root',
-                                         database='mysql',
-                                         password='PASS')
+                                         user='<enter user, root',
+                                         database='<enter database, mysql',
+                                         password='<enter password')
     except Error as e:
         print("Error while connecting to MySQL", e)
     return con
@@ -38,9 +38,9 @@ def notes_post():
     cursor = con.cursor()
 
     new_content = request.json["content"]
-    cursor.execute("""INSERT IGNORE INTO note (content)  VALUES (%s)""", (new_content,))
+    cursor.execute("INSERT INTO note (content) VALUES (%s)", (new_content,))
     con.commit()
-    con.close()
+    cursor.close()
     return "Success", 200
 
 #Delete a note with given id
@@ -49,8 +49,8 @@ def notes_delete(id):
     con = db_connection()
     cursor = con.cursor()
        
-    sql = """ DELETE FROM note WHERE id=? """
-    con.execute(sql, (id,))
+    sql = """ DELETE FROM note WHERE id= %s """
+    cursor.execute(sql, (id,))
     con.commit()
     con.close()
     return "Deleted note with id: {} .".format(id), 200
