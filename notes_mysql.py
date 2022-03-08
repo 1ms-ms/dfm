@@ -9,10 +9,7 @@ app = Flask(__name__)
 def db_connection():
     con = None
     try:
-        con = mysql.connector.connect(host='127.0.0.1',
-                                         user='<enter user, root',
-                                         database='<enter database, mysql',
-                                         password='<enter password')
+        con = mysql.connector.connect(option_files='my.conf')
     except Error as e:
         print("Error while connecting to MySQL", e)
     return con
