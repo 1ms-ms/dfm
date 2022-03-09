@@ -4,4 +4,5 @@ services:
     build: .
     container_name: notes_container
     network_mode: "host"
-    
+    volumes:
+      - path/to/my.conf:/app/my.conf
