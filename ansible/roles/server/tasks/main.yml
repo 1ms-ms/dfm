@@ -1,0 +1,9 @@
+- name: Copy files from host
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - { src: '/home/ms/web_notes_mysql/Dockerfile', dest: '/home/ec2-user/Dockerfile' }
+    - { src: '/home/ms/web_notes_mysql/requirements.txt', dest: '/home/ec2-user/requirements.txt' }
+    - { src: '/home/ms/web_notes_mysql/notes_mysql.py', dest: '/home/ec2-user/notes_mysql.py' }
+    - { src: '/home/ms/terra_ansible_mysql/infrastructure-TF-ANSIBLE/my.conf', dest: '/home/ec2-user/my.conf' }
+- name: install flask with pip
+  pip: name=flask
