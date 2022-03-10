@@ -1,0 +1,54 @@
+- name: Make sure pymysql is present
+  pip:
+    name: pymysql
+    state: present
+- name: MYSQL
+  yum:
+    name: mariadb-server
+    state: latest
+- name: Start service MariaDB, if not started
+  service:
+    name: mariadb
+    state: started
+- name: Enable service MariaDB
+  systemd:
+    name: mariadb
+    enabled: yes   
+#configuration
+- name: update mysql root password for all root accounts  
+  mysql_user:  
+    name: root  
+    host: "{{ item }}"  
+    password: password 
+    login_user: root  
+    login_password: password  
+    check_implicit_admin: yes  
+    priv: "*.*:ALL,GRANT"  
+  with_items:  
+    - "{{ ansible_hostname }}"  
+    - 127.0.0.1  
+    - ::1  
+    - localhost
+
+- name: check if DB exists
+  shell: mysql -e 'SHOW DATABASES;' | grep -c testdb
+  register: dbstatus
+  failed_when: dbstatus.rc == 2
+
+- name: create a new database  
+  mysql_db: name=testdb state=present login_user=root login_password=password
+  register: database_exists
+  when: dbstatus.stdout == "0"
+
+- name: add sample data to database  
+  copy: src=/home/ms/terra_ansible_mysql/infrastructure-TF-ANSIBLE/ansible/config.sql dest=/tmp/config.sql 
+
+- name: check if table exists
+  shell: mysql -u root -p testdb -e 'SHOW TABLES like "note";' | grep -c note
+  register: dbstatus
+  failed_when: dbstatus.rc == 2
+
+# - name: insert sample data into database  
+#   mysql_db: name=testdb state=import target=/tmp/config.sql login_user=root login_password=password
+#   register: table_exists
+#   when: dbstatus.stdout == "0"
