@@ -29,7 +29,7 @@
     - 127.0.0.1  
     - ::1  
     - localhost
-
+    - 172.17.0.2
 - name: check if DB exists
   shell: mysql -e 'SHOW DATABASES;' | grep -c testdb
   register: dbstatus
@@ -40,15 +40,16 @@
   register: database_exists
   when: dbstatus.stdout == "0"
 
-- name: add sample data to database  
-  copy: src=/home/ms/terra_ansible_mysql/infrastructure-TF-ANSIBLE/ansible/config.sql dest=/tmp/config.sql 
 
 - name: check if table exists
-  shell: mysql -u root -p testdb -e 'SHOW TABLES like "note";' | grep -c note
-  register: dbstatus
-  failed_when: dbstatus.rc == 2
+  shell: mysql -u root --password="password" --database="testdb" -e 'SHOW TABLES;' | grep note
+  register: tablerc
+  failed_when: tablerc.rc == 2
 
-# - name: insert sample data into database  
-#   mysql_db: name=testdb state=import target=/tmp/config.sql login_user=root login_password=password
-#   register: table_exists
-#   when: dbstatus.stdout == "0"
+- name: add sample data to the destination 
+  copy: src=/home/ms/terra_ansible_mysql/infrastructure-TF-ANSIBLE/ansible/config.sql dest=/tmp/config.sql 
+  when: tablerc.rc == 1
+
+- name: insert sample data into database  
+  mysql_db: name=testdb state=import target=/tmp/config.sql login_user=root login_password=password
+  when: tablerc.rc == 1
