@@ -18,13 +18,14 @@
 #configuration
 - name: update mysql root password for all root accounts  
   mysql_user:  
-    name: "{{ user }}"  
+    name: root  
     host: localhost  
-    password: "{{ password }}" 
-    login_user: "{{ user }}"  
-    login_password: "{{ password }}"  
+    password: password 
+    login_user: root 
+    login_password: password  
     check_implicit_admin: yes  
     priv: "*.*:ALL,GRANT"  
+
 
 - name: check if DB exists
   shell: mysql -e 'SHOW DATABASES;' | grep -c "{{ database }}"
@@ -32,20 +33,29 @@
   failed_when: dbstatus.rc == 2
 
 - name: create a new database  
-  mysql_db: name="{{ database }}" state=present login_user="{{ user }}" login_password="{{ password }}" 
+  mysql_db: name="{{ database }}" state=present login_user=root login_password=password
   register: database_exists
   when: dbstatus.stdout == "0"
 
+- name: Create database user 
+  mysql_user:
+    login_user: root 
+    login_password: password
+    name: "{{ user }}"
+    password: "{{ password }}"
+    host: 172.17.0.2
+    priv: "*.*:ALL,GRANT"
+    state: present
 
 - name: check if table exists
-  shell: mysql -u="{{ user }}" --password="{{ password }}" --database="{{ database }}" -e 'SHOW TABLES;' | grep note
+  shell: mysql -u=root --password=password --database="{{ database }}" -e 'SHOW TABLES;' | grep note
   register: tablerc
   failed_when: tablerc.rc == 2
 
 - name: add sample data to the destination 
   copy: src=/home/ms/terra_ansible_mysql/infrastructure-TF-ANSIBLE/ansible/config.sql dest=/tmp/config.sql 
-  when: tablerc.rc == 0
+  failed_when: tablerc.rc == 0
 
 - name: insert sample data into database  
-  mysql_db: name="{{ database }}" state=import target=/tmp/config.sql login_user="{{ user }}" login_password="{{ password }}"
-  when: tablerc.rc == 0
+  mysql_db: name="{{ database }}" state=import target=/tmp/config.sql login_user=root login_password=password
+  failed_when: tablerc.rc == 0
