@@ -1,3 +1,7 @@
+- name: Create my_config.conf file
+  template:
+    src: ./roles/maria_db/templates/template.j2
+    dest: /home/ec2-user/my.conf
 - name: Make sure pymysql is present
   pip:
     name: pymysql
@@ -10,46 +14,38 @@
   service:
     name: mariadb
     state: started
-- name: Enable service MariaDB
-  systemd:
-    name: mariadb
-    enabled: yes   
+    enabled: yes  
 #configuration
 - name: update mysql root password for all root accounts  
   mysql_user:  
-    name: root  
-    host: "{{ item }}"  
-    password: password 
-    login_user: root  
-    login_password: password  
+    name: "{{ user }}"  
+    host: localhost  
+    password: "{{ password }}" 
+    login_user: "{{ user }}"  
+    login_password: "{{ password }}"  
     check_implicit_admin: yes  
     priv: "*.*:ALL,GRANT"  
-  with_items:  
-    - "{{ ansible_hostname }}"  
-    - 127.0.0.1  
-    - ::1  
-    - localhost
-    - 172.17.0.2
+
 - name: check if DB exists
-  shell: mysql -e 'SHOW DATABASES;' | grep -c testdb
+  shell: mysql -e 'SHOW DATABASES;' | grep -c "{{ database }}"
   register: dbstatus
   failed_when: dbstatus.rc == 2
 
 - name: create a new database  
-  mysql_db: name=testdb state=present login_user=root login_password=password
+  mysql_db: name="{{ database }}" state=present login_user="{{ user }}" login_password="{{ password }}" 
   register: database_exists
   when: dbstatus.stdout == "0"
 
 
 - name: check if table exists
-  shell: mysql -u root --password="password" --database="testdb" -e 'SHOW TABLES;' | grep note
+  shell: mysql -u="{{ user }}" --password="{{ password }}" --database="{{ database }}" -e 'SHOW TABLES;' | grep note
   register: tablerc
   failed_when: tablerc.rc == 2
 
 - name: add sample data to the destination 
   copy: src=/home/ms/terra_ansible_mysql/infrastructure-TF-ANSIBLE/ansible/config.sql dest=/tmp/config.sql 
-  when: tablerc.rc == 1
+  when: tablerc.rc == 0
 
 - name: insert sample data into database  
-  mysql_db: name=testdb state=import target=/tmp/config.sql login_user=root login_password=password
-  when: tablerc.rc == 1
+  mysql_db: name="{{ database }}" state=import target=/tmp/config.sql login_user="{{ user }}" login_password="{{ password }}"
+  when: tablerc.rc == 0
