@@ -9,7 +9,7 @@ app = Flask(__name__)
 def db_connection():
     con = None
     try:
-        con = mysql.connector.connect(option_files='my.conf')
+        con = mysql.connector.connect(option_files='/app/my.conf')
     except Error as e:
         print("Error while connecting to MySQL", e)
     return con
@@ -53,4 +53,4 @@ def notes_delete(id):
     return "Deleted note with id: {} .".format(id), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0')
+    app.run(host='0.0.0.0')
