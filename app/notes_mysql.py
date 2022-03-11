@@ -25,10 +25,10 @@ def notes():
         dict(id=row[0],content=row[1])
         for row in cursor.fetchall()
         ]
-    if notes is not None:  
+    if notes is not None:
         con.close()
-        return jsonify(notes) 
-#Post a note 
+        return jsonify(notes)
+#Post a note
 @app.route("/create", methods=["POST"])
 def notes_post():
     con = db_connection()
@@ -45,7 +45,7 @@ def notes_post():
 def notes_delete(id):
     con = db_connection()
     cursor = con.cursor()
-       
+
     sql = """ DELETE FROM note WHERE id= %s """
     cursor.execute(sql, (id,))
     con.commit()
