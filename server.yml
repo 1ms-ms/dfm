@@ -1,0 +1,7 @@
+- name: CONFIG
+  hosts: aws_ec2
+  become: true
+  roles:
+    - role: maria_db
+    - role: server
+    - role: docker
