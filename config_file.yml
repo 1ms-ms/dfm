@@ -1,4 +1,4 @@
-user: root
+user: testuser
 host: 172.17.0.1
-password: password
+password: testpass
 database: testdb
