@@ -1,5 +1,5 @@
 # dfm
-docker run --network="host" --rm flask
+ansible-playbook server.yml -e @config_file.yml
 ```
 .
 ├── ansible.cfg
