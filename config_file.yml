@@ -2,4 +2,3 @@ user: root
 host: 172.17.0.1
 password: password
 database: testdb
-table_used: note
